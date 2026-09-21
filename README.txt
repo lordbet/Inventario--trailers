@@ -1,27 +1,13 @@
-INVENTARIO DE TRAILERS V2
-==========================
-Versión con servidor, base de datos SQLite, fotografías y enlaces compartibles.
+INVENTARIO DE TRAILERS - VERSION RENDER 2.1
 
-REQUISITOS
-- Node.js 18 o superior.
-- Un servidor/hosting que permita Node.js si quieres publicarla en Internet.
+Correccion: se elimino better-sqlite3 para evitar el cierre status 134 en Render.
+Esta version usa almacenamiento JSON + fotos y no requiere modulos nativos.
 
-INSTALACIÓN
-1. Descomprime el ZIP.
-2. Abre una terminal en la carpeta.
-3. Ejecuta: npm install
-4. Ejecuta: npm start
-5. Abre: http://localhost:3000
+Render:
+Build Command: npm install
+Start Command: npm start
+Health Check Path opcional: /health
 
-DATOS
-- La base de datos se crea como inventory.db.
-- Las fotos se guardan en uploads/.
-- Los datos permanecen aunque cierres el servidor.
-- CSV y JSON están disponibles desde la pantalla principal.
-- Cada inspección tiene un enlace /api/share/ID.
-
-PUBLICACIÓN
-Para que el enlace sea accesible desde cualquier celular, debes subir esta carpeta a un hosting con Node.js y usar HTTPS. La app ya está preparada para eso. Configura la variable PORT si tu proveedor la requiere.
-
-SEGURIDAD
-Para uso laboral real conviene añadir usuarios/contraseñas, permisos, copias de seguridad y almacenamiento de fotos en un servicio persistente antes de manejar información sensible.
+IMPORTANTE:
+En el plan gratuito de Render, los archivos locales pueden perderse tras reinicios o nuevos despliegues.
+Para uso permanente, agrega un Persistent Disk y configura la variable DATA_DIR con la ruta montada (por ejemplo /var/data).

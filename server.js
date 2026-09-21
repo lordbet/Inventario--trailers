@@ -62,6 +62,9 @@ app.post('/api/inspections', upload.array('photos', 20), (req, res) => {
     const r = {
       id: crypto.randomUUID(), trailer: b.trailer.trim(), seal: (b.seal || '').trim(),
       emptyBox: b.emptyBox === 'true' || b.emptyBox === '1', status: b.status, tags,
+      client: (b.client || '').trim(), model: (b.model || '').trim(),
+      entryDate: b.entryDate || new Date().toISOString().slice(0,10), inPatio: true, exitDate: null,
+      travelCondition: (b.travelCondition || 'Apta para viaje').trim(),
       comments: (b.comments || '').trim(), inspector: (b.inspector || '').trim(),
       created: Date.now(), photos: (req.files || []).map(f => f.filename)
     };
@@ -69,6 +72,14 @@ app.post('/api/inspections', upload.array('photos', 20), (req, res) => {
     res.status(201).json(publicRow(r));
   } catch (e) { console.error(e); res.status(500).json({ error: 'No se pudo guardar' }); }
 });
+app.patch('/api/inspections/:id/exit', (req, res) => {
+  const db = loadDB(); const r = db.inspections.find(x => x.id === req.params.id);
+  if (!r) return res.status(404).json({ error: 'No encontrado' });
+  const exitDate = req.body.exitDate || new Date().toISOString().slice(0,10);
+  if (r.entryDate && exitDate < r.entryDate) return res.status(400).json({ error: 'La fecha de salida no puede ser anterior al ingreso' });
+  r.inPatio = false; r.exitDate = exitDate; saveDB(db); res.json(publicRow(r));
+});
+
 app.delete('/api/inspections/:id', (req, res) => {
   const db = loadDB(); const i = db.inspections.findIndex(x => x.id === req.params.id);
   if (i < 0) return res.status(404).json({ error: 'No encontrado' });
@@ -84,7 +95,7 @@ app.get('/api/share/:id', (req, res) => {
 app.get('/api/report.csv', (req, res) => {
   const rows = [...loadDB().inspections].sort((a,b)=>b.created-a.created);
   const q = v => `"${String(v ?? '').replaceAll('"','""')}"`;
-  const data = [['Trailer','Sello','Estado','Caja vacía','Observaciones','Comentarios','Inspector','Fecha','Fotos'], ...rows.map(x => [x.trailer,x.seal,x.status,x.emptyBox?'Sí':'No',(x.tags||[]).join(' | '),x.comments,x.inspector,new Date(x.created).toLocaleString('es-MX'),(x.photos||[]).length])];
+  const data = [['Trailer','Sello','Cliente','Modelo','Tipo','Estado','Condición para viaje','En patio','Fecha ingreso','Fecha salida','Observaciones','Comentarios','Inspector','Fotos'], ...rows.map(x => [x.trailer,x.seal,x.client||'',x.model||'',x.emptyBox?'Vacía':'Cargada',x.status,x.travelCondition||'',x.inPatio===false?'No':'Sí',x.entryDate||'',x.exitDate||'',(x.tags||[]).join(' | '),x.comments,x.inspector,(x.photos||[]).length])];
   res.setHeader('Content-Type','text/csv; charset=utf-8');
   res.setHeader('Content-Disposition','attachment; filename=inventario-trailers.csv');
   res.send('\ufeff' + data.map(r => r.map(q).join(',')).join('\n'));
