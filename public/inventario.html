@@ -1,0 +1,4 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Inventario de Trailers</title><link rel="stylesheet" href="style.css"></head><body class="sharedInventory">
+<header><div><h1>Inventario de Trailers</h1><small>Consulta general de cajas y evidencia fotográfica</small></div></header>
+<main><div class="bar"><input id="sq" placeholder="Buscar caja, sello, cliente o patio" oninput="renderShared()"><select id="sf" onchange="renderShared()"><option value="patio">En patio</option><option value="all">Todas</option><option value="loaded">Cargadas</option><option value="empty">Vacías</option><option value="damaged">Dañadas</option><option value="workshop">En taller</option><option value="out">Fuera de patio</option></select></div><div id="sharedStats" class="sharedSummary"></div><div id="sharedList"></div></main>
+<script src="inventario.js"></script></body></html>
