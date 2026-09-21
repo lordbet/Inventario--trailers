@@ -63,6 +63,9 @@ app.post('/api/inspections', upload.array('photos', 20), (req, res) => {
       id: crypto.randomUUID(), trailer: b.trailer.trim(), seal: (b.seal || '').trim(),
       emptyBox: b.emptyBox === 'true' || b.emptyBox === '1', status: b.status, tags,
       client: (b.client || '').trim(), model: (b.model || '').trim(),
+      yard: (b.yard || '').trim(), geofence: (b.geofence || '').trim(),
+      workshop: b.workshop === 'true' || b.workshop === '1', operationalStatus: (b.operationalStatus || 'Disponible').trim(),
+      lastWaybill: (b.lastWaybill || '').trim(), lastTripDate: b.lastTripDate || '',
       entryDate: b.entryDate || new Date().toISOString().slice(0,10), inPatio: true, exitDate: null,
       travelCondition: (b.travelCondition || 'Apta para viaje').trim(),
       comments: (b.comments || '').trim(), inspector: (b.inspector || '').trim(),
@@ -87,6 +90,7 @@ app.delete('/api/inspections/:id', (req, res) => {
   for (const name of (r.photos || [])) { const f = path.join(UP, name); try { fs.unlinkSync(f); } catch {} }
   res.json({ ok: true });
 });
+app.get('/inventario', (req, res) => res.sendFile(path.join(PUBLIC, 'inventario.html')));
 app.get('/api/share/:id', (req, res) => {
   const r = loadDB().inspections.find(x => x.id === req.params.id);
   if (!r) return res.status(404).send('No encontrado');
@@ -95,7 +99,7 @@ app.get('/api/share/:id', (req, res) => {
 app.get('/api/report.csv', (req, res) => {
   const rows = [...loadDB().inspections].sort((a,b)=>b.created-a.created);
   const q = v => `"${String(v ?? '').replaceAll('"','""')}"`;
-  const data = [['Trailer','Sello','Cliente','Modelo','Tipo','Estado','Condición para viaje','En patio','Fecha ingreso','Fecha salida','Observaciones','Comentarios','Inspector','Fotos'], ...rows.map(x => [x.trailer,x.seal,x.client||'',x.model||'',x.emptyBox?'Vacía':'Cargada',x.status,x.travelCondition||'',x.inPatio===false?'No':'Sí',x.entryDate||'',x.exitDate||'',(x.tags||[]).join(' | '),x.comments,x.inspector,(x.photos||[]).length])];
+  const data = [['Trailer','Sello','Cliente','Modelo','Patio','Geocerca','Tipo','En taller','Estatus','Última Carta Porte','Fecha último viaje','Estado físico','Condición para viaje','En patio','Fecha ingreso','Fecha salida','Observaciones','Comentarios','Inspector','Fotos'], ...rows.map(x => [x.trailer,x.seal,x.client||'',x.model||'',x.yard||'',x.geofence||'',x.emptyBox?'Vacía':'Cargada',x.workshop?'Sí':'No',x.operationalStatus||'',x.lastWaybill||'',x.lastTripDate||'',x.status,x.travelCondition||'',x.inPatio===false?'No':'Sí',x.entryDate||'',x.exitDate||'',(x.tags||[]).join(' | '),x.comments,x.inspector,(x.photos||[]).length])];
   res.setHeader('Content-Type','text/csv; charset=utf-8');
   res.setHeader('Content-Disposition','attachment; filename=inventario-trailers.csv');
   res.send('\ufeff' + data.map(r => r.map(q).join(',')).join('\n'));
